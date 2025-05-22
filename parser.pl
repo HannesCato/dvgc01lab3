@@ -7,7 +7,7 @@
 /* This the set of productions, P, for this grammar                           */
 /* This is a slightly modified from of the Pascal Grammar for Lab 2 Prolog    */
 /******************************************************************************/
-
+/test
 program       --> prog_head, var_part, stat_part.
 
 /******************************************************************************/
