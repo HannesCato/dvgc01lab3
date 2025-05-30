@@ -35,20 +35,10 @@ parseall :- tell('parser.out'),
               'testfiles/sem5.pas']),
     told.
 
-    test_one(File) :-
-        read_in(File, L0),
-        exclude(=( -1 ), L0, L),
-        write('Lexemes: '), write(L), nl,
-        lexer(L, Tokens),
-        write('Tokens: '), write(Tokens), nl,
-        parser(Tokens, _).
-
-
 parsefiles([]).
 parsefiles([H|T]) :-
     write('Testing '), write(H), nl,
-    read_in(H, L0),
-    exclude(=( -1 ), L0, L),    
+    read_in(H, L),   
     write(L), nl,
     lexer(L, Tokens),
     write(Tokens), nl,
@@ -59,6 +49,7 @@ parsefiles([H|T]) :-
 /******************************************************************************/
 /* Reader - from Clocksin & Mellish (modified for Lab 2)                     */
 /******************************************************************************/
+    
 read_in(File,[W|Ws]) :- see(File), get0(C), 
                         readword(C, W, C1), restsent(W, C1, Ws), nl, seen.
 
@@ -141,7 +132,7 @@ match(W, 270) :- atom(W), atom_codes(W, [C|R]), char_type(C, alpha), forall(memb
 match(W, 272) :- ( atom(W) -> atom_codes(W, L)
                  ; integer(W) -> number_codes(W, L) ),
                  forall(member(C, L), char_type(C, digit)).
-
+match(-1, 275). % EOF
 match(_, 273). % undefined
 
 /******************************************************************************/
