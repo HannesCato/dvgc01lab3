@@ -7,11 +7,15 @@ lab2(File, Result) :-
     lexer(L, Tokens),
     parser(Tokens, Result).
 
-parseall :- tell('parser.out'),
-    write('Testing multiple Pascal files'), nl, nl,
+parseall :- tell('parser.out'),   
+    write('Testing OK programs'), nl, nl,
+
     parsefiles(['testfiles/testok1.pas', 'testfiles/testok2.pas', 'testfiles/testok3.pas',
                 'testfiles/testok4.pas', 'testfiles/testok5.pas', 'testfiles/testok6.pas',
-                'testfiles/testok7.pas', 'testfiles/testa.pas', 'testfiles/testb.pas',
+                'testfiles/testok7.pas']), 
+                
+    write('Testing a-z programs'), nl, nl, 
+    parsefiles(['testfiles/testa.pas', 'testfiles/testb.pas',
                 'testfiles/testc.pas', 'testfiles/testd.pas', 'testfiles/teste.pas',
                 'testfiles/testf.pas', 'testfiles/testg.pas', 'testfiles/testh.pas',
                 'testfiles/testi.pas', 'testfiles/testj.pas', 'testfiles/testk.pas',
@@ -19,19 +23,36 @@ parseall :- tell('parser.out'),
                 'testfiles/testo.pas', 'testfiles/testp.pas', 'testfiles/testq.pas',
                 'testfiles/testr.pas', 'testfiles/tests.pas', 'testfiles/testt.pas',
                 'testfiles/testu.pas', 'testfiles/testv.pas', 'testfiles/testw.pas',
-                'testfiles/testx.pas', 'testfiles/testy.pas', 'testfiles/testz.pas',
-                'testfiles/fun1.pas', 'testfiles/fun2.pas', 'testfiles/fun3.pas',
-                'testfiles/fun4.pas', 'testfiles/fun5.pas', 'testfiles/sem1.pas',
-                'testfiles/sem2.pas', 'testfiles/sem3.pas', 'testfiles/sem4.pas',
-                'testfiles/sem5.pas']),
+                'testfiles/testx.pas', 'testfiles/testy.pas', 'testfiles/testz.pas']),
+        
+    write('Testing fun programs'), nl, nl,
+    parsefiles(['testfiles/fun1.pas', 'testfiles/fun2.pas', 'testfiles/fun3.pas',
+                'testfiles/fun4.pas', 'testfiles/fun5.pas']),
+                
+    write('Testing sem programs'), nl, nl,          
+    parsefiles(['testfiles/sem1.pas','testfiles/sem2.pas', 'testfiles/sem3.pas',
+              'testfiles/sem4.pas',
+              'testfiles/sem5.pas']),
     told.
+
+    test_one(File) :-
+        read_in(File, L0),
+        exclude(=( -1 ), L0, L),
+        write('Lexemes: '), write(L), nl,
+        lexer(L, Tokens),
+        write('Tokens: '), write(Tokens), nl,
+        parser(Tokens, _).
+
 
 parsefiles([]).
 parsefiles([H|T]) :-
     write('Testing '), write(H), nl,
-    read_in(H, L), lexer(L, Tokens),
-    write(L), nl, write(Tokens), nl,
-    parser(Tokens, _), nl,
+    read_in(H, L0),
+    exclude(=( -1 ), L0, L),    
+    write(L), nl,
+    lexer(L, Tokens),
+    write(Tokens), nl,
+    parser(Tokens, _),
     write(H), write(' end of parse'), nl, nl,
     parsefiles(T).
 
@@ -53,7 +74,7 @@ readword(C, W, C2) :-
    char_type(C, digit),
    get0(C1),
    ( char_type(C1, alpha) -> (name(W, [C]), C2 = C1)
-   ; restword(C1, Cs, C2), name(W, [C|Cs]) ).
+   ; restword(C1, Cs, C2), name(A, [C|Cs]), atom_string(W, A) ).
 
 readword(C, W, C1) :- single_character(C), name(W, [C]), get0(C1).
 
@@ -117,7 +138,9 @@ match(':', 58).
 match(';', 59).
 
 match(W, 270) :- atom(W), atom_codes(W, [C|R]), char_type(C, alpha), forall(member(X, R), char_type(X, alnum)).
-match(W, 272) :- atom(W), atom_codes(W, L), forall(member(C, L), char_type(C, digit)).
+match(W, 272) :- ( atom(W) -> atom_codes(W, L)
+                 ; integer(W) -> number_codes(W, L) ),
+                 forall(member(C, L), char_type(C, digit)).
 
 match(_, 273). % undefined
 
@@ -126,8 +149,13 @@ match(_, 273). % undefined
 /******************************************************************************/
 
 parser(Tokens, Res) :-
-    (prog(Tokens, Res), Res = [], write('Parse OK!'), nl)
-    ; write('Parse Fail!'), nl.
+    ( prog(Tokens, Res), Res = [] ->
+        write('Parse OK!'), nl
+    ;
+        write('Parse Fail!'), nl
+    ).
+
+
 
 /******************************************************************************/
 /* Grammar Rules in Definite Clause Grammar form                              */
